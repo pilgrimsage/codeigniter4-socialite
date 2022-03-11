@@ -47,5 +47,10 @@ class Socialite extends BaseConfig
             'client_secret' => '',
             'redirect'      => '',
         ],
+        'twitter'   => [
+            'client_id'     => '',
+            'client_secret' => '',
+            'redirect'      => '',
+        ],
     ];
 }
