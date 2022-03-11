@@ -25,6 +25,7 @@
     },
     "require-dev": {
         "laminas/laminas-coding-standard": "^2.1",
+        "mockery/mockery": "^1.0",
         "phpunit/phpunit": "^8.0|^9.3"
     },
     "autoload": {
@@ -49,6 +50,7 @@
     "prefer-stable": true,
     "scripts": {
         "cs-check": "phpcs",
-        "cs-fix": "phpcbf"
+        "cs-fix": "phpcbf",
+        "test": "phpunit"
     }
 }

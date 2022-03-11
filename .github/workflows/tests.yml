@@ -1,52 +1,30 @@
 name: tests
 
-on:
-  push:
-  pull_request:
-  schedule:
-    - cron: '0 0 * * *'
+on: [push, pull_request]
 
 jobs:
-  tests:
-    runs-on: ubuntu-20.04
-
+  build:
+    name: PHP ${{ matrix.php-versions }}
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[ci skip]')"
     strategy:
       fail-fast: true
       matrix:
-        php: [7.2, 7.3, 7.4, 8.0, 8.1]
-        laravel: [^6.0, ^7.0, ^8.0, ^9.0]
-        exclude:
-          - php: 7.2
-            laravel: ^8.0
-          - php: 7.2
-            laravel: ^9.0
-          - php: 7.3
-            laravel: ^9.0
-          - php: 7.4
-            laravel: ^9.0
-          - php: 8.1
-            laravel: ^6.0
-          - php: 8.1
-            laravel: ^7.0
-
-    name: PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }}
-
+        php-versions: ['7.3', '7.4', '8.0', '8.1']
+        stability: [prefer-stable]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Setup PHP
+      - name: Setup PHP Action
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php }}
-          extensions: dom, curl, libxml, mbstring, zip
+          extensions: intl, json, mbstring, xdebug, xml, pdo, sqlite, pdo_sqlite
+          php-version: "${{ matrix.php-versions }}"
           tools: composer:v2
-          coverage: none
-
-      - name: Install dependencies
-        run: |
-           composer require "illuminate/contracts=${{ matrix.laravel }}" --no-update
-           composer update --prefer-dist --no-interaction --no-progress
-
-      - name: Execute tests
-        run: vendor/bin/phpunit --verbose
+          coverage: xdebug
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: "Validate composer.json and composer.lock"
+        run: "composer validate"
+      - name: "Install dependencies"
+        run: "composer install --prefer-dist --no-progress --no-suggest"
+      - name: "Run test suite"
+        run: "composer test"
