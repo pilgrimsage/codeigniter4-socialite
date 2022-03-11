@@ -123,6 +123,7 @@ abstract class AbstractUser implements UserInterface
     /**
      * {@inheritdoc}
      */
+    #[\ReturnTypeWillChange]
     public function offsetExists($offset)
     {
         return array_key_exists($offset, $this->user);
@@ -131,6 +132,7 @@ abstract class AbstractUser implements UserInterface
     /**
      * {@inheritdoc}
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         return $this->user[$offset];
@@ -139,6 +141,7 @@ abstract class AbstractUser implements UserInterface
     /**
      * {@inheritdoc}
      */
+    #[\ReturnTypeWillChange]
     public function offsetSet($offset, $value)
     {
         $this->user[$offset] = $value;
@@ -147,6 +150,7 @@ abstract class AbstractUser implements UserInterface
     /**
      * {@inheritdoc}
      */
+    #[\ReturnTypeWillChange]
     public function offsetUnset($offset)
     {
         unset($this->user[$offset]);

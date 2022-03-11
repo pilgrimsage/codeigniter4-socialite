@@ -97,7 +97,7 @@ class GithubProvider extends AbstractProvider
     /**
      * Get the default options for an HTTP request.
      *
-     * @param string $token
+     * @param  string  $token
      * @return array
      */
     protected function getRequestOptions($token)
