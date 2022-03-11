@@ -264,8 +264,9 @@ abstract class AbstractProvider implements ProviderInterface
         ));
 
         return $this->user->setToken($token)
-            ->setRefreshToken(Arr::get($response, 'refresh_token'))
-            ->setExpiresIn(Arr::get($response, 'expires_in'));
+                    ->setRefreshToken(Arr::get($response, 'refresh_token'))
+                    ->setExpiresIn(Arr::get($response, 'expires_in'))
+                    ->setApprovedScopes(explode($this->scopeSeparator, Arr::get($response, 'scope', '')));
     }
 
     /**
@@ -292,7 +293,7 @@ abstract class AbstractProvider implements ProviderInterface
         $state = $this->session->get('state');
         $this->session->remove('state');
 
-        return ! (strlen($state) > 0 && $this->request->getGet('state') === $state);
+        return empty($state) || $this->request->getGet('state') !== $state;
     }
 
     /**
@@ -462,6 +463,18 @@ abstract class AbstractProvider implements ProviderInterface
     protected function usesPKCE()
     {
         return $this->usesPKCE;
+    }
+
+    /**
+     * Enables PKCE for the provider.
+     *
+     * @return $this
+     */
+    public function enablePKCE()
+    {
+        $this->usesPKCE = true;
+
+        return $this;
     }
 
     /**

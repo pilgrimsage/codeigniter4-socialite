@@ -15,6 +15,7 @@ use Fluent\Socialite\Two\GithubProvider;
 use Fluent\Socialite\Two\GitlabProvider;
 use Fluent\Socialite\Two\GoogleProvider;
 use Fluent\Socialite\Two\LinkedInProvider;
+use Fluent\Socialite\Two\TwitterProvider;
 use InvalidArgumentException;
 
 use function array_merge;
@@ -230,7 +231,24 @@ class SocialiteManager implements FactoryInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Create an instance of the specified driver.
+     *
+     * @return AbstractProvider
+     */
+    protected function createTwitterDriver()
+    {
+        return $this->buildProvider(
+            TwitterProvider::class,
+            $this->config->services['twitter']
+        );
+    }
+
+    /**
+     * Build an OAuth 2 provider instance.
+     *
+     * @param  string  $provider
+     * @param  array  $config
+     * @return AbstractProvider
      */
     public function buildProvider(string $provider, array $config)
     {
@@ -271,6 +289,18 @@ class SocialiteManager implements FactoryInterface
         return Str::startsWith($redirect, '/')
             ? redirect()->to($redirect)
             : $redirect;
+    }
+
+    /**
+     * Forget all of the resolved driver instances.
+     *
+     * @return $this
+     */
+    public function forgetDrivers()
+    {
+        $this->drivers = [];
+
+        return $this;
     }
 
     /**
