@@ -46,7 +46,7 @@ class BitbucketProvider extends AbstractProvider
     protected function getUserByToken($token)
     {
         $response = $this->getHttpClient()->get('https://api.bitbucket.org/2.0/user', [
-            'query' => ['access_token' => $token],
+            'headers' => ['Authorization' => 'Bearer ' . $token],
         ]);
 
         $user = json_decode($response->getBody(), true);
@@ -66,18 +66,20 @@ class BitbucketProvider extends AbstractProvider
      */
     protected function getEmailByToken($token)
     {
-        $emailsUrl = 'https://api.bitbucket.org/2.0/user/emails?access_token=' . $token;
+        $emailsUrl = 'https://api.bitbucket.org/2.0/user/emails';
 
         try {
-            $response = $this->getHttpClient()->get($emailsUrl);
+            $response = $this->getHttpClient()->get($emailsUrl, [
+                'headers' => ['Authorization' => 'Bearer ' . $token],
+            ]);
         } catch (Exception $e) {
             return;
         }
 
         $emails = json_decode($response->getBody(), true);
 
-        foreach ($emails['values'] as $email) {
-            if ($email['type'] == 'email' && $email['is_primary'] && $email['is_confirmed']) {
+        foreach ((array) Arr::get((array) $emails, 'values', []) as $email) {
+            if (Arr::get($email, 'type') === 'email' && Arr::get($email, 'is_primary') && Arr::get($email, 'is_confirmed')) {
                 return $email['email'];
             }
         }

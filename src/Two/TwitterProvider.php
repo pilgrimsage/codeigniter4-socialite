@@ -4,6 +4,8 @@ namespace Fluent\Socialite\Two;
 
 use Fluent\Socialite\Helpers\Arr;
 
+use function json_decode;
+
 class TwitterProvider extends AbstractProvider
 {
     /**
@@ -30,7 +32,7 @@ class TwitterProvider extends AbstractProvider
     /**
      * {@inheritdoc}
      */
-    public function getAuthUrl($state)
+    protected function getAuthUrl($state)
     {
         return $this->buildAuthUrlFromBase('https://twitter.com/i/oauth2/authorize', $state);
     }
@@ -49,8 +51,8 @@ class TwitterProvider extends AbstractProvider
     protected function getUserByToken($token)
     {
         $response = $this->getHttpClient()->get('https://api.twitter.com/2/users/me', [
-            'headers' => ['Authorization' => 'Bearer '.$token],
-            'query' => ['user.fields' => 'profile_image_url'],
+            'headers' => ['Authorization' => 'Bearer ' . $token],
+            'query'   => ['user.fields' => 'profile_image_url'],
         ]);
 
         return Arr::get(json_decode($response->getBody(), true), 'data');
@@ -61,11 +63,11 @@ class TwitterProvider extends AbstractProvider
      */
     protected function mapUserToObject(array $user)
     {
-        return (new User)->setRaw($user)->map([
-            'id' => $user['id'],
+        return (new User())->setRaw($user)->map([
+            'id'       => $user['id'],
             'nickname' => $user['username'],
-            'name' => $user['name'],
-            'avatar' => $user['profile_image_url'],
+            'name'     => $user['name'],
+            'avatar'   => $user['profile_image_url'],
         ]);
     }
 
@@ -75,8 +77,8 @@ class TwitterProvider extends AbstractProvider
     public function getAccessTokenResponse($code)
     {
         $response = $this->getHttpClient()->post($this->getTokenUrl(), [
-            'headers' => ['Accept' => 'application/json'],
-            'auth' => [$this->clientId, $this->clientSecret],
+            'headers'     => ['Accept' => 'application/json'],
+            'auth'        => [$this->clientId, $this->clientSecret],
             'form_params' => $this->getTokenFields($code),
         ]);
 

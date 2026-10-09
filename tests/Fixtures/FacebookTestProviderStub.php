@@ -3,14 +3,14 @@
 namespace FLuent\Socialite\Tests\Fixtures;
 
 use Fluent\Socialite\Two\FacebookProvider;
+use GuzzleHttp\Client;
 use Mockery as m;
+use Mockery\MockInterface;
 use stdClass;
 
 class FacebookTestProviderStub extends FacebookProvider
 {
-    /**
-     * @var \GuzzleHttp\Client|\Mockery\MockInterface
-     */
+    /** @var Client|MockInterface */
     public $http;
 
     protected function getUserByToken($token)
@@ -21,7 +21,7 @@ class FacebookTestProviderStub extends FacebookProvider
     /**
      * Get a fresh instance of the Guzzle HTTP client.
      *
-     * @return \GuzzleHttp\Client|\Mockery\MockInterface
+     * @return Client|MockInterface
      */
     protected function getHttpClient()
     {

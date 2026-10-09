@@ -22,14 +22,14 @@ class FacebookProvider extends AbstractProvider
      *
      * @var string
      */
-    protected $version = 'v3.3';
+    protected $version = 'v23.0';
 
     /**
      * The user fields being requested.
      *
      * @var array
      */
-    protected $fields = ['name', 'email', 'gender', 'verified', 'link'];
+    protected $fields = ['name', 'email'];
 
     /**
      * The scopes being requested.
@@ -84,7 +84,7 @@ class FacebookProvider extends AbstractProvider
             'form_params' => $this->getTokenFields($code),
         ]);
 
-        $data = json_decode($response->getBody(), true);
+        $data = $this->decodeResponse($response);
 
         return Arr::add($data, 'expires_in', Arr::pull($data, 'expires'));
     }
@@ -98,18 +98,18 @@ class FacebookProvider extends AbstractProvider
 
         $params = [
             'access_token' => $token,
-            'fields' => implode(',', $this->fields),
+            'fields'       => implode(',', $this->fields),
         ];
 
         if (! empty($this->clientSecret)) {
             $params['appsecret_proof'] = hash_hmac('sha256', $token, $this->clientSecret);
         }
 
-        $response = $this->getHttpClient()->get($this->graphUrl.'/'.$this->version.'/me', [
+        $response = $this->getHttpClient()->get($this->graphUrl . '/' . $this->version . '/me', [
             'headers' => [
                 'Accept' => 'application/json',
             ],
-            'query' => $params,
+            'query'   => $params,
         ]);
 
         return json_decode($response->getBody(), true);

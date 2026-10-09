@@ -10,17 +10,22 @@ use Fluent\Socialite\Helpers\Arr;
 use Fluent\Socialite\Helpers\Str;
 use Fluent\Socialite\Two\User;
 use GuzzleHttp\Client;
+use Psr\Http\Message\ResponseInterface;
 
+use function array_filter;
 use function array_merge;
 use function array_unique;
+use function array_values;
 use function base64_encode;
+use function explode;
 use function hash;
+use function hash_equals;
 use function http_build_query;
 use function implode;
-use function is_null;
+use function is_array;
+use function is_string;
 use function json_decode;
 use function rtrim;
-use function strlen;
 use function strtr;
 
 use const PHP_QUERY_RFC1738;
@@ -30,7 +35,7 @@ abstract class AbstractProvider implements ProviderInterface
     /**
      * The HTTP request instance.
      *
-     * @var CodeIgniter\HTTP\RequestInterface
+     * @var RequestInterface
      */
     protected $request;
 
@@ -119,7 +124,7 @@ abstract class AbstractProvider implements ProviderInterface
     protected $user;
 
     /**
-     * The session intance.
+     * The session instance.
      *
      * @var SessionInterface
      */
@@ -257,16 +262,61 @@ abstract class AbstractProvider implements ProviderInterface
             throw new InvalidStateException();
         }
 
+        $this->assertNoAuthorizationError();
+
         $response = $this->getAccessTokenResponse($this->getCode());
 
-        $this->user = $this->mapUserToObject($this->getUserByToken(
-            $token  = Arr::get($response, 'access_token')
-        ));
+        $token = Arr::get($response, 'access_token');
+
+        if (empty($token)) {
+            throw new AuthorizationException(
+                'The provider did not return an access token: '
+                . (Arr::get($response, 'error_description') ?: Arr::get($response, 'error', 'unknown error'))
+            );
+        }
+
+        $this->user = $this->mapUserToObject($this->getUserByToken($token));
 
         return $this->user->setToken($token)
                     ->setRefreshToken(Arr::get($response, 'refresh_token'))
                     ->setExpiresIn(Arr::get($response, 'expires_in'))
-                    ->setApprovedScopes(explode($this->scopeSeparator, Arr::get($response, 'scope', '')));
+                    ->setApprovedScopes($this->parseApprovedScopes(Arr::get($response, 'scope', '')));
+    }
+
+    /**
+     * Throw if the provider redirected back with an OAuth error (e.g. the user denied access).
+     *
+     * @return void
+     * @throws AuthorizationException
+     */
+    protected function assertNoAuthorizationError()
+    {
+        $error = $this->request->getGet('error');
+
+        if (! empty($error)) {
+            $description = $this->request->getGet('error_description');
+
+            throw new AuthorizationException(
+                'Authorization failed: ' . $error . (empty($description) ? '' : ' (' . $description . ')')
+            );
+        }
+    }
+
+    /**
+     * Normalize the "scope" value of a token response to an array of scopes.
+     *
+     * @param  mixed  $scope
+     * @return array
+     */
+    protected function parseApprovedScopes($scope)
+    {
+        if (is_array($scope)) {
+            return array_values($scope);
+        }
+
+        return array_values(array_filter(explode($this->scopeSeparator, (string) $scope), static function ($item) {
+            return $item !== '';
+        }));
     }
 
     /**
@@ -293,7 +343,9 @@ abstract class AbstractProvider implements ProviderInterface
         $state = $this->session->get('state');
         $this->session->remove('state');
 
-        return empty($state) || $this->request->getGet('state') !== $state;
+        $given = $this->request->getGet('state');
+
+        return empty($state) || ! is_string($given) || ! hash_equals((string) $state, $given);
     }
 
     /**
@@ -306,7 +358,46 @@ abstract class AbstractProvider implements ProviderInterface
             'form_params' => $this->getTokenFields($code),
         ]);
 
-        return json_decode($response->getBody(), true);
+        return $this->decodeResponse($response);
+    }
+
+    /**
+     * Request a new access token using a refresh token.
+     *
+     * @param  string  $refreshToken
+     * @return array
+     */
+    public function getRefreshTokenResponse($refreshToken)
+    {
+        $response = $this->getHttpClient()->post($this->getTokenUrl(), [
+            'headers'     => ['Accept' => 'application/json'],
+            'form_params' => [
+                'grant_type'    => 'refresh_token',
+                'client_id'     => $this->clientId,
+                'client_secret' => $this->clientSecret,
+                'refresh_token' => $refreshToken,
+            ],
+        ]);
+
+        return $this->decodeResponse($response);
+    }
+
+    /**
+     * Decode a JSON response body into an array.
+     *
+     * @param ResponseInterface $response
+     * @return array
+     * @throws AuthorizationException
+     */
+    protected function decodeResponse($response)
+    {
+        $data = json_decode((string) $response->getBody(), true);
+
+        if (! is_array($data)) {
+            throw new AuthorizationException('The provider returned a malformed token response.');
+        }
+
+        return $data;
     }
 
     /**
@@ -388,7 +479,7 @@ abstract class AbstractProvider implements ProviderInterface
      */
     protected function getHttpClient()
     {
-        if (is_null($this->httpClient)) {
+        if ($this->httpClient === null) {
             $this->httpClient = new Client($this->guzzle);
         }
 
@@ -411,6 +502,18 @@ abstract class AbstractProvider implements ProviderInterface
     public function setRequest(RequestInterface $request)
     {
         $this->request = $request;
+
+        return $this;
+    }
+
+    /**
+     * Set the session instance used to persist state and the PKCE verifier.
+     *
+     * @return $this
+     */
+    public function setSession(SessionInterface $session)
+    {
+        $this->session = $session;
 
         return $this;
     }
@@ -494,7 +597,7 @@ abstract class AbstractProvider implements ProviderInterface
      */
     protected function getCodeChallenge()
     {
-        $hashed = hash('sha256', $this->session->get('code_verifier'));
+        $hashed = hash('sha256', (string) $this->session->get('code_verifier'), true);
 
         return rtrim(strtr(base64_encode($hashed), '+/', '-_'), '=');
     }

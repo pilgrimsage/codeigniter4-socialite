@@ -4,14 +4,14 @@ namespace Fluent\Socialite\Tests\Fixtures;
 
 use Fluent\Socialite\Two\AbstractProvider;
 use Fluent\Socialite\Two\User;
+use GuzzleHttp\Client;
 use Mockery as m;
+use Mockery\MockInterface;
 use stdClass;
 
 class OAuthTwoTestProviderStub extends AbstractProvider
 {
-    /**
-     * @var \GuzzleHttp\Client|\Mockery\MockInterface
-     */
+    /** @var Client|MockInterface */
     public $http;
 
     protected function getAuthUrl($state)
@@ -31,13 +31,13 @@ class OAuthTwoTestProviderStub extends AbstractProvider
 
     protected function mapUserToObject(array $user)
     {
-        return (new User)->map(['id' => $user['id']]);
+        return (new User())->map(['id' => $user['id']]);
     }
 
     /**
      * Get a fresh instance of the Guzzle HTTP client.
      *
-     * @return \GuzzleHttp\Client|\Mockery\MockInterface
+     * @return Client|MockInterface
      */
     protected function getHttpClient()
     {

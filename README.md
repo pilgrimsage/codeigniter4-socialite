@@ -16,7 +16,7 @@ CodeIgniter4 Socialite is Forked from [Laravel Socialite](https://github.com/lar
 
 ## Introduction
 
-CodeIgniter4 Socialite provides an expressive, fluent interface to OAuth authentication with Facebook, Google, LinkedIn, GitHub, GitLab and Bitbucket. It handles almost all of the boilerplate social authentication code you are dreading writing.
+CodeIgniter4 Socialite provides an expressive, fluent interface to OAuth authentication with Facebook, Google, LinkedIn, GitHub, GitLab, Bitbucket and Twitter (X). It handles almost all of the boilerplate social authentication code you are dreading writing.
 
 ## Installation
 
@@ -29,7 +29,7 @@ composer require agungsugiarto/codeigniter4-socialite
 
 Copy the config file from `vendor/agungsugiarto/codeigniter4-socialite/src/Config/Socialite.php` to config folder of your codeigniter4 application change the namespace to `Config` and change class extends from `BaseConfig` to `\Fluent\Socialite\Config\Socialite`
 
-Before using Socialite, you will need to add credentials for the OAuth providers your application utilizes. These credentials should be placed in your application's `app/Config/Socialite.php` configuration file, and should use the key `facebook`, `linkedin`, `google`, `github`, `gitlab`, or `bitbucket`, depending on the providers your application requires:
+Before using Socialite, you will need to add credentials for the OAuth providers your application utilizes. These credentials should be placed in your application's `app/Config/Socialite.php` configuration file, and should use the key `facebook`, `linkedin`, `linkedin-openid`, `google`, `github`, `gitlab`, `bitbucket`, or `twitter`, depending on the providers your application requires:
 
 ```php
 /**
@@ -45,7 +45,18 @@ public $services = [
 ];
 ```
 
-> If the `redirect` option contains a relative path, it will automatically be resolved to a fully qualified URL.
+> If the `redirect` option contains a relative path (e.g. `/auth/callback`), it will automatically be resolved to a fully qualified URL using `site_url()`.
+
+A missing service entry, or one without `client_id`, `client_secret` and `redirect`, throws an `InvalidArgumentException` that names the missing option.
+
+### Provider notes
+
+| Driver            | Notes |
+|-------------------|-------|
+| `linkedin-openid` | "Sign In with LinkedIn using OpenID Connect" (`openid profile email`). Use this instead of `linkedin`, whose `r_liteprofile` / `r_emailaddress` scopes LinkedIn has retired. |
+| `gitlab`          | Set an optional `host` key for a self-hosted GitLab (`'host' => 'https://gitlab.example.com'`). Uses the v4 API. |
+| `facebook`        | Requests the `name` and `email` fields. Use `->fields([...])` to request more and `->usingGraphVersion('vXX.0')` to pin a Graph API version. |
+| `twitter`         | OAuth 2.0 with PKCE (enabled automatically). |
 
 ## Authentication
 ### Routing
@@ -143,6 +154,41 @@ use Fluent\Socialite\Facades\Socialite;
 
 return Socialite::driver('google')->stateless()->user();
 ```
+#### Error Handling
+
+The callback route should be prepared for these exceptions, all thrown by `user()`:
+
+```php
+use Fluent\Socialite\Two\AuthorizationException;
+use Fluent\Socialite\Two\InvalidStateException;
+
+try {
+    $user = Socialite::driver('github')->user();
+} catch (InvalidStateException $e) {
+    // The `state` did not match the one stored in the session (expired session or CSRF attempt).
+} catch (AuthorizationException $e) {
+    // The user denied access, or the provider returned an error or an unusable token response.
+}
+```
+
+Network and HTTP errors from the provider's API surface as Guzzle exceptions (`GuzzleHttp\Exception\GuzzleException`).
+
+#### Refreshing Tokens
+
+Providers that issue refresh tokens can exchange them for a new access token:
+
+```php
+$tokens = Socialite::driver('google')->getRefreshTokenResponse($user->refreshToken);
+// ['access_token' => '...', 'expires_in' => 3599, ...]
+```
+
+## Testing
+
+```sh
+composer install
+composer test
+```
+
 ## Contributing
 
 Thank you for considering contributing to Socialite!.

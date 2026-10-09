@@ -17,37 +17,43 @@ class Socialite extends BaseConfig
      * a conventional file to locate the various service credentials.
      */
     public $services = [
-        'github'    => [
+        'github'          => [
             'client_id'     => '',
             'client_secret' => '',
             'redirect'      => '',
         ],
-        'facebook'  => [
+        'facebook'        => [
             'client_id'     => '',
             'client_secret' => '',
             'redirect'      => '',
         ],
-        'google'    => [
+        'google'          => [
             'client_id'     => '',
             'client_secret' => '',
             'redirect'      => '',
         ],
-        'linkedin'  => [
+        'linkedin'        => [
             'client_id'     => '',
             'client_secret' => '',
             'redirect'      => '',
         ],
-        'bitbucket' => [
+        'linkedin-openid' => [
             'client_id'     => '',
             'client_secret' => '',
             'redirect'      => '',
         ],
-        'gitlab'    => [
+        'bitbucket'       => [
             'client_id'     => '',
             'client_secret' => '',
             'redirect'      => '',
         ],
-        'twitter'   => [
+        'gitlab'          => [
+            'client_id'     => '',
+            'client_secret' => '',
+            'redirect'      => '',
+            // 'host'       => 'https://gitlab.example.com', // self-hosted GitLab
+        ],
+        'twitter'         => [
             'client_id'     => '',
             'client_secret' => '',
             'redirect'      => '',

@@ -31,7 +31,7 @@ class GoogleProvider extends AbstractProvider
      */
     protected function getAuthUrl($state)
     {
-        return $this->buildAuthUrlFromBase('https://accounts.google.com/o/oauth2/auth', $state);
+        return $this->buildAuthUrlFromBase('https://accounts.google.com/o/oauth2/v2/auth', $state);
     }
 
     /**
@@ -39,7 +39,7 @@ class GoogleProvider extends AbstractProvider
      */
     protected function getTokenUrl()
     {
-        return 'https://www.googleapis.com/oauth2/v4/token';
+        return 'https://oauth2.googleapis.com/token';
     }
 
     /**

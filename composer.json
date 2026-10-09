@@ -1,11 +1,18 @@
 {
     "name": "agungsugiarto/codeigniter4-socialite",
     "description": "Forked from Laravel Socialite wrapper around OAuth 1 & OAuth 2 libraries.",
-    "keywords": ["codeigniter4", "oauth", "ouath2-client"],
+    "keywords": [
+        "codeigniter4",
+        "oauth",
+        "oauth2",
+        "oauth2-client",
+        "socialite",
+        "authentication"
+    ],
     "license": "MIT",
     "support": {
         "issues": "https://github.com/agungsugiarto/codeigniter4-socialite/issues",
-        "source": "https://github.com/laravel/codeigniter4-socialite"
+        "source": "https://github.com/agungsugiarto/codeigniter4-socialite"
     },
     "authors": [
         {
@@ -20,7 +27,7 @@
     "require": {
         "php": "^7.2|^8.0",
         "ext-json": "*",
-        "guzzlehttp/guzzle": "^6.0|^7.0",
+        "guzzlehttp/guzzle": "^6.5.5|^7.0",
         "codeigniter4/framework": "^4.1"
     },
     "require-dev": {
@@ -44,7 +51,10 @@
         }
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     },
     "minimum-stability": "dev",
     "prefer-stable": true,

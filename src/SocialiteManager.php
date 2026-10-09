@@ -14,15 +14,18 @@ use Fluent\Socialite\Two\FacebookProvider;
 use Fluent\Socialite\Two\GithubProvider;
 use Fluent\Socialite\Two\GitlabProvider;
 use Fluent\Socialite\Two\GoogleProvider;
+use Fluent\Socialite\Two\LinkedInOpenIdProvider;
 use Fluent\Socialite\Two\LinkedInProvider;
 use Fluent\Socialite\Two\TwitterProvider;
 use InvalidArgumentException;
 
+use function array_key_exists;
 use function array_merge;
-use function is_null;
+use function helper;
+use function is_array;
 use function method_exists;
+use function site_url;
 use function sprintf;
-use function ucfirst;
 
 class SocialiteManager implements FactoryInterface
 {
@@ -64,7 +67,7 @@ class SocialiteManager implements FactoryInterface
     {
         $driver = $driver ?: $this->getDefaultDriver();
 
-        if (is_null($driver)) {
+        if ($driver === null) {
             throw new InvalidArgumentException(sprintf(
                 'Unable to resolve NULL driver for [%s].',
                 static::class
@@ -96,7 +99,7 @@ class SocialiteManager implements FactoryInterface
         if (isset($this->customCreators[$driver])) {
             return $this->callCustomCreator($driver);
         } else {
-            $method = 'create' . ucfirst($driver) . 'Driver';
+            $method = 'create' . Str::studly($driver) . 'Driver';
 
             if (method_exists($this, $method)) {
                 return $this->$method();
@@ -161,7 +164,7 @@ class SocialiteManager implements FactoryInterface
     {
         return $this->buildProvider(
             GithubProvider::class,
-            $this->config->services['github']
+            $this->getServiceConfig('github')
         );
     }
 
@@ -174,7 +177,7 @@ class SocialiteManager implements FactoryInterface
     {
         return $this->buildProvider(
             FacebookProvider::class,
-            $this->config->services['facebook']
+            $this->getServiceConfig('facebook')
         );
     }
 
@@ -187,7 +190,7 @@ class SocialiteManager implements FactoryInterface
     {
         return $this->buildProvider(
             GoogleProvider::class,
-            $this->config->services['google']
+            $this->getServiceConfig('google')
         );
     }
 
@@ -200,7 +203,20 @@ class SocialiteManager implements FactoryInterface
     {
         return $this->buildProvider(
             LinkedInProvider::class,
-            $this->config->services['linkedin']
+            $this->getServiceConfig('linkedin')
+        );
+    }
+
+    /**
+     * Create an instance of the specified driver.
+     *
+     * @return AbstractProvider
+     */
+    protected function createLinkedinOpenidDriver()
+    {
+        return $this->buildProvider(
+            LinkedInOpenIdProvider::class,
+            $this->getServiceConfig('linkedin-openid')
         );
     }
 
@@ -213,7 +229,7 @@ class SocialiteManager implements FactoryInterface
     {
         return $this->buildProvider(
             BitbucketProvider::class,
-            $this->config->services['bitbucket']
+            $this->getServiceConfig('bitbucket')
         );
     }
 
@@ -226,7 +242,7 @@ class SocialiteManager implements FactoryInterface
     {
         return $this->buildProvider(
             GitlabProvider::class,
-            $config = $this->config->services['gitlab']
+            $config = $this->getServiceConfig('gitlab')
         )->setHost($config['host'] ?? null);
     }
 
@@ -239,14 +255,37 @@ class SocialiteManager implements FactoryInterface
     {
         return $this->buildProvider(
             TwitterProvider::class,
-            $this->config->services['twitter']
+            $this->getServiceConfig('twitter')
         );
+    }
+
+    /**
+     * Get the credentials configured for the given service.
+     *
+     * @param  string  $name
+     * @return array
+     * @throws InvalidArgumentException
+     */
+    protected function getServiceConfig($name)
+    {
+        $config = $this->config->services[$name] ?? null;
+
+        if (! is_array($config)) {
+            throw new InvalidArgumentException("No Socialite configuration found for [$name] in Config\\Socialite::\$services.");
+        }
+
+        foreach (['client_id', 'client_secret', 'redirect'] as $key) {
+            if (! array_key_exists($key, $config)) {
+                throw new InvalidArgumentException("Socialite configuration for [$name] is missing the [$key] option.");
+            }
+        }
+
+        return $config;
     }
 
     /**
      * Build an OAuth 2 provider instance.
      *
-     * @param  string  $provider
      * @param  array  $config
      * @return AbstractProvider
      */
@@ -286,9 +325,13 @@ class SocialiteManager implements FactoryInterface
     {
         $redirect = Arr::value($config['redirect']);
 
-        return Str::startsWith($redirect, '/')
-            ? redirect()->to($redirect)
-            : $redirect;
+        if (Str::startsWith($redirect, '/')) {
+            helper('url');
+
+            return site_url($redirect);
+        }
+
+        return $redirect;
     }
 
     /**

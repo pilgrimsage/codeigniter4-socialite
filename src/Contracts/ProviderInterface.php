@@ -2,7 +2,6 @@
 
 namespace Fluent\Socialite\Contracts;
 
-use CodeIgniter\Http\RedirectResponse;
 use CodeIgniter\HTTP\RequestInterface;
 use Fluent\Socialite\Contracts\UserInterface;
 use GuzzleHttp\Client;

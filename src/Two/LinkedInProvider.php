@@ -63,7 +63,7 @@ class LinkedInProvider extends AbstractProvider
                 'Authorization'             => 'Bearer ' . $token,
                 'X-RestLi-Protocol-Version' => '2.0.0',
             ],
-            'query' => [
+            'query'   => [
                 'projection' => '(id,firstName,lastName,profilePicture(displayImage~:playableStreams))',
             ],
         ]);
@@ -84,8 +84,8 @@ class LinkedInProvider extends AbstractProvider
                 'Authorization'             => 'Bearer ' . $token,
                 'X-RestLi-Protocol-Version' => '2.0.0',
             ],
-            'query' => [
-                'q' => 'members',
+            'query'   => [
+                'q'          => 'members',
                 'projection' => '(elements*(handle~))',
             ],
         ]);

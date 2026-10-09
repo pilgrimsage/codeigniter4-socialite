@@ -8,6 +8,7 @@ use function str_replace;
 use function strlen;
 use function strncmp;
 use function substr;
+use function ucwords;
 
 class Str
 {
@@ -48,5 +49,16 @@ class Str
         }
 
         return false;
+    }
+
+    /**
+     * Convert a value to StudlyCase (e.g. "linkedin-openid" becomes "LinkedinOpenid").
+     *
+     * @param  string  $value
+     * @return string
+     */
+    public static function studly($value)
+    {
+        return str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', (string) $value)));
     }
 }

@@ -2,10 +2,17 @@
 
 namespace Fluent\Socialite;
 
+use AllowDynamicProperties;
 use Fluent\Socialite\Contracts\UserInterface;
+use ReturnTypeWillChange;
 
 use function array_key_exists;
 
+/**
+ * Providers map extra, provider-specific attributes (e.g. `first_name`) onto the user,
+ * so dynamic properties must stay allowed on PHP 8.2+.
+ */
+#[AllowDynamicProperties]
 abstract class AbstractUser implements UserInterface
 {
     /**
@@ -123,7 +130,7 @@ abstract class AbstractUser implements UserInterface
     /**
      * {@inheritdoc}
      */
-    #[\ReturnTypeWillChange]
+    #[ReturnTypeWillChange]
     public function offsetExists($offset)
     {
         return array_key_exists($offset, $this->user);
@@ -132,7 +139,7 @@ abstract class AbstractUser implements UserInterface
     /**
      * {@inheritdoc}
      */
-    #[\ReturnTypeWillChange]
+    #[ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         return $this->user[$offset];
@@ -141,7 +148,7 @@ abstract class AbstractUser implements UserInterface
     /**
      * {@inheritdoc}
      */
-    #[\ReturnTypeWillChange]
+    #[ReturnTypeWillChange]
     public function offsetSet($offset, $value)
     {
         $this->user[$offset] = $value;
@@ -150,7 +157,7 @@ abstract class AbstractUser implements UserInterface
     /**
      * {@inheritdoc}
      */
-    #[\ReturnTypeWillChange]
+    #[ReturnTypeWillChange]
     public function offsetUnset($offset)
     {
         unset($this->user[$offset]);

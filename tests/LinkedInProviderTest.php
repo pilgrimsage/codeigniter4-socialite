@@ -2,13 +2,15 @@
 
 namespace Fluent\Socialite\Tests;
 
-use CodeIgniter\Http\IncomingRequest as Request;
+use CodeIgniter\Config\Services;
 use CodeIgniter\Test\CIUnitTestCase;
-use GuzzleHttp\Client;
 use Fluent\Socialite\Two\LinkedInProvider;
 use Fluent\Socialite\Two\User;
+use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\Response;
 use Mockery as m;
-use Psr\Http\Message\ResponseInterface;
+
+use function json_encode;
 
 class LinkedInProviderTest extends CIUnitTestCase
 {
@@ -21,37 +23,34 @@ class LinkedInProviderTest extends CIUnitTestCase
 
     public function test_it_can_map_a_user_without_an_email_address()
     {
-        $request = m::mock(Request::class);
-        $request->allows('getGet')->with('code')->andReturns('fake-code');
+        $request = Services::request(null, false);
+        $request->setGlobal('get', ['code' => 'fake-code']);
 
-        $accessTokenResponse = m::mock(ResponseInterface::class);
-        $accessTokenResponse->allows('getBody')->andReturns(json_encode(['access_token' => 'fake-token']));
+        $accessTokenResponse = new Response(200, [], json_encode(['access_token' => 'fake-token']));
 
-        $basicProfileResponse = m::mock(ResponseInterface::class);
-        $basicProfileResponse->allows('getBody')->andReturns(json_encode(['id' => $userId = 1]));
+        $basicProfileResponse = new Response(200, [], json_encode(['id' => $userId = 1]));
 
         // Make sure email address response contains no values.
-        $emailAddressResponse = m::mock(ResponseInterface::class);
-        $emailAddressResponse->allows('getBody')->andReturns(json_encode(['elements' => []]));
+        $emailAddressResponse = new Response(200, [], json_encode(['elements' => []]));
 
         $guzzle = m::mock(Client::class);
         $guzzle->expects('post')->andReturns($accessTokenResponse);
         $guzzle->allows('get')->with('https://api.linkedin.com/v2/me', [
             'headers' => [
-                'Authorization' => 'Bearer fake-token',
+                'Authorization'             => 'Bearer fake-token',
                 'X-RestLi-Protocol-Version' => '2.0.0',
             ],
-            'query' => [
+            'query'   => [
                 'projection' => '(id,firstName,lastName,profilePicture(displayImage~:playableStreams))',
             ],
         ])->andReturns($basicProfileResponse);
         $guzzle->allows('get')->with('https://api.linkedin.com/v2/emailAddress', [
             'headers' => [
-                'Authorization' => 'Bearer fake-token',
+                'Authorization'             => 'Bearer fake-token',
                 'X-RestLi-Protocol-Version' => '2.0.0',
             ],
-            'query' => [
-                'q' => 'members',
+            'query'   => [
+                'q'          => 'members',
                 'projection' => '(elements*(handle~))',
             ],
         ])->andReturns($emailAddressResponse);

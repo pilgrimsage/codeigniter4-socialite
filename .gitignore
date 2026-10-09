@@ -132,3 +132,4 @@ nb-configuration.xml
 
 # PHPCS
 .php-cs-fixer.cache
+.phpcs-cache
