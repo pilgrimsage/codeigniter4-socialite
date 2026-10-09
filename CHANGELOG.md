@@ -26,6 +26,7 @@
 
 - `TwitterProvider::getAuthUrl()` is now `protected`, like every other provider.
 - Test suite rewritten: previously commented-out tests restored, plus coverage for the manager, every provider and the helpers.
+- `composer cs-check` passes (ruleset tuned for PHP 7.2 / BC) and runs in CI.
 - CI runs PHP 7.4 – 8.4 with current GitHub Actions.
 - Guzzle requirement raised to `^6.5.5|^7.0`.
 

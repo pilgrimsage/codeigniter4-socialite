@@ -79,7 +79,11 @@ class BitbucketProvider extends AbstractProvider
         $emails = json_decode($response->getBody(), true);
 
         foreach ((array) Arr::get((array) $emails, 'values', []) as $email) {
-            if (Arr::get($email, 'type') === 'email' && Arr::get($email, 'is_primary') && Arr::get($email, 'is_confirmed')) {
+            if (
+                Arr::get($email, 'type') === 'email'
+                && Arr::get($email, 'is_primary')
+                && Arr::get($email, 'is_confirmed')
+            ) {
                 return $email['email'];
             }
         }

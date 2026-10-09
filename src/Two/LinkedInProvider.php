@@ -98,7 +98,8 @@ class LinkedInProvider extends AbstractProvider
      */
     protected function mapUserToObject(array $user)
     {
-        $preferredLocale = Arr::get($user, 'firstName.preferredLocale.language') . '_' . Arr::get($user, 'firstName.preferredLocale.country');
+        $preferredLocale = Arr::get($user, 'firstName.preferredLocale.language')
+            . '_' . Arr::get($user, 'firstName.preferredLocale.country');
         $firstName       = Arr::get($user, 'firstName.localized.' . $preferredLocale);
         $lastName        = Arr::get($user, 'lastName.localized.' . $preferredLocale);
 

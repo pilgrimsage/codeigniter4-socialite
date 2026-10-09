@@ -10,7 +10,6 @@ use function array_shift;
 use function count;
 use function explode;
 use function is_array;
-use function is_null;
 use function strpos;
 
 class Arr
@@ -67,7 +66,7 @@ class Arr
             return static::value($default);
         }
 
-        if (is_null($key)) {
+        if ($key === null) {
             return $array;
         }
 
@@ -102,7 +101,7 @@ class Arr
      */
     public static function set(&$array, $key, $value)
     {
-        if (is_null($key)) {
+        if ($key === null) {
             return $array = $value;
         }
 
@@ -140,7 +139,7 @@ class Arr
      */
     public static function add($array, $key, $value)
     {
-        if (is_null(static::get($array, $key))) {
+        if (static::get($array, $key) === null) {
             static::set($array, $key, $value);
         }
 
@@ -217,7 +216,7 @@ class Arr
      */
     public static function first($array, ?callable $callback = null, $default = null)
     {
-        if (is_null($callback)) {
+        if ($callback === null) {
             if (empty($array)) {
                 return static::value($default);
             }

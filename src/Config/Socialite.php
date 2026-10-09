@@ -16,6 +16,7 @@ class Socialite extends BaseConfig
      * location for this type of information, allowing packages to have
      * a conventional file to locate the various service credentials.
      */
+    /** @var array<string, array<string, mixed>> */
     public $services = [
         'github'          => [
             'client_id'     => '',

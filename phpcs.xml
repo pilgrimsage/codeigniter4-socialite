@@ -16,5 +16,30 @@
     <file>tests</file>
 
     <!-- Include all rules from the Laminas Coding Standard -->
-    <rule ref="LaminasCodingStandard"/>
+    <rule ref="LaminasCodingStandard">
+        <!--
+            The package supports PHP ^7.2 and is a public API (interfaces, protected hooks that
+            third-party providers override), so native scalar/return/property types and
+            strict_types cannot be required without a BC break.
+        -->
+        <exclude name="SlevomatCodingStandard.TypeHints.DeclareStrictTypes"/>
+        <exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint"/>
+        <exclude name="SlevomatCodingStandard.TypeHints.ParameterTypeHint"/>
+        <exclude name="SlevomatCodingStandard.TypeHints.PropertyTypeHint"/>
+    </rule>
+
+    <!-- `$usesPKCE` is the property name inherited from Laravel Socialite; providers override it. -->
+    <rule ref="WebimpressCodingStandard.NamingConventions.ValidVariableName.NotCamelCapsProperty">
+        <exclude-pattern>src/Two/AbstractProvider.php</exclude-pattern>
+        <exclude-pattern>src/Two/TwitterProvider.php</exclude-pattern>
+        <exclude-pattern>tests/Fixtures/OAuthTwoWithPKCETestProviderStub.php</exclude-pattern>
+    </rule>
+
+    <!-- Tests use descriptive snake_case names and may contain long fixture lines. -->
+    <rule ref="PSR1.Methods.CamelCapsMethodName">
+        <exclude-pattern>tests/*</exclude-pattern>
+    </rule>
+    <rule ref="Generic.Files.LineLength">
+        <exclude-pattern>tests/*</exclude-pattern>
+    </rule>
 </ruleset>

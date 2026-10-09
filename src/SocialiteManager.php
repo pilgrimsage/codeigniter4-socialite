@@ -271,7 +271,9 @@ class SocialiteManager implements FactoryInterface
         $config = $this->config->services[$name] ?? null;
 
         if (! is_array($config)) {
-            throw new InvalidArgumentException("No Socialite configuration found for [$name] in Config\\Socialite::\$services.");
+            throw new InvalidArgumentException(
+                "No Socialite configuration found for [$name] in Config\\Socialite::\$services."
+            );
         }
 
         foreach (['client_id', 'client_secret', 'redirect'] as $key) {
@@ -346,6 +348,7 @@ class SocialiteManager implements FactoryInterface
         return $this;
     }
 
+    // phpcs:disable Squiz.Commenting.FunctionComment.InvalidNoReturn
     /**
      * Get the default driver name.
      *
@@ -356,4 +359,6 @@ class SocialiteManager implements FactoryInterface
     {
         throw new InvalidArgumentException('No Socialite driver was specified.');
     }
+
+    // phpcs:enable Squiz.Commenting.FunctionComment.InvalidNoReturn
 }

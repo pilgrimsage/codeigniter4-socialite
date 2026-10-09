@@ -13,9 +13,11 @@ composer install
 composer test                          # phpunit (alias for `phpunit`)
 vendor/bin/phpunit tests/OAuthTwoTest.php
 vendor/bin/phpunit --filter test_name  # single test
-composer cs-check                      # phpcs (laminas standard); NOT clean on the existing code and not run in CI
-composer cs-fix                        # phpcbf — don't run blindly: it adds declare(strict_types=1), which breaks the tests
+composer cs-check                      # phpcs (laminas standard, tuned in phpcs.xml); clean, and enforced in CI
+composer cs-fix                        # phpcbf — safe now that phpcs.xml excludes the strict_types/native-type sniffs
 ```
+
+`phpcs.xml` deliberately excludes the `strict_types` and native parameter/return/property type sniffs: the package supports PHP ^7.2 and its protected hooks are overridden by third-party providers, so those would be BC breaks (and `strict_types` breaks the Mockery-based tests).
 
 PHPUnit bootstraps CodeIgniter's own test bootstrap from `vendor/codeigniter4/framework`, and tests extend `CIUnitTestCase`. `phpunit.xml.dist` writes coverage/log output to `build/`.
 
